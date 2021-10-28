@@ -132,13 +132,19 @@ object AdminUtils extends Logging {
     val startIndex = if (fixedStartIndex >= 0) fixedStartIndex else rand.nextInt(brokerArray.length)
     var currentPartitionId = math.max(0, startPartitionId)
     var nextReplicaShift = if (fixedStartIndex >= 0) fixedStartIndex else rand.nextInt(brokerArray.length)
+    println("起始随机startIndex:"+startIndex+"currentPartitionId:"+currentPartitionId+";起始随机nextReplicaShift："+nextReplicaShift+";brokerArray:"+brokerList)
+
     for (_ <- 0 until nPartitions) {
       if (currentPartitionId > 0 && (currentPartitionId % brokerArray.length == 0))
         nextReplicaShift += 1
+        println("变更nextReplicaShift:"+nextReplicaShift)
+
       val firstReplicaIndex = (currentPartitionId + startIndex) % brokerArray.length
       val replicaBuffer = mutable.ArrayBuffer(brokerArray(firstReplicaIndex))
       for (j <- 0 until replicationFactor - 1)
         replicaBuffer += brokerArray(replicaIndex(firstReplicaIndex, nextReplicaShift, j, brokerArray.length))
+
+      println("p-"+currentPartitionId,replicaBuffer)
       ret.put(currentPartitionId, replicaBuffer)
       currentPartitionId += 1
     }
