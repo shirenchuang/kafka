@@ -22,6 +22,12 @@ buildscript {
     mavenCentral()
     jcenter()
     maven {
+      url 'http://maven.aliyun.com/nexus/content/groups/public/'
+    }
+    maven {
+      url 'http://maven.aliyun.com/nexus/content/repositories/jcenter'
+    }
+    maven {
       url "https://plugins.gradle.org/m2/"
     }
   }
@@ -54,7 +60,12 @@ spotless {
 allprojects {
 
   repositories {
-    mavenCentral()
+    maven {
+      url 'http://maven.aliyun.com/nexus/content/groups/public/'
+    }
+    maven {
+      url 'http://maven.aliyun.com/nexus/content/repositories/jcenter'
+    }
   }
 
   apply plugin: 'idea'
@@ -766,6 +777,12 @@ project(':core') {
     compile libs.commonsCli
 
     compileOnly libs.log4j
+
+    // 加入log4j
+    compile group: 'log4j', name: 'log4j', version: '1.2.17'
+    compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.30'
+    compile group: 'org.slf4j', name: 'slf4j-log4j12', version: '1.7.30'
+
 
     testCompile project(':clients').sourceSets.test.output
     testCompile libs.bcpkix
