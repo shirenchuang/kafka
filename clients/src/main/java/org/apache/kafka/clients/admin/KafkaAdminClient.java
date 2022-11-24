@@ -748,6 +748,7 @@ public class KafkaAdminClient extends AdminClient {
         protected int tries;
         private Node curNode = null;
         private long nextAllowedTryMs;
+        private Throwable lastThrowable = null;
 
         Call(boolean internal,
              String callName,
