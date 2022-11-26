@@ -152,10 +152,7 @@ class ZkAdminManager(val config: KafkaConfig,
                    responseCallback: Map[String, ApiError] => Unit): Unit = {
 
     // 1. map over topics creating assignment and calling zookeeper
-    val brokersTmp = metadataCache.getAliveBrokers()
-    //fix KAFKA-13226
-    val brokers = brokersTmp.toList.sortBy(_.id)
-
+    val brokers = metadataCache.getAliveBrokers().toList.sortBy(_.id)
     val metadata = toCreate.values.map(topic =>
       try {
         if (metadataCache.contains(topic.name))

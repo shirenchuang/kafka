@@ -2278,6 +2278,43 @@ class KafkaApisTest {
           .setListener(plaintextListener.value)
       ).asJava)
 
+    val broker1 = new UpdateMetadataBroker()
+      .setId(1)
+      .setRack("rack")
+      .setEndpoints(Seq(
+        new UpdateMetadataEndpoint()
+          .setHost("broker1")
+          .setPort(9091)
+          .setSecurityProtocol(SecurityProtocol.PLAINTEXT.id)
+          .setListener(plaintextListener.value)
+      ).asJava)
+
+    val broker2 = new UpdateMetadataBroker()
+      .setId(2)
+      .setRack("rack")
+      .setEndpoints(Seq(
+        new UpdateMetadataEndpoint()
+          .setHost("broker2")
+          .setPort(9092)
+          .setSecurityProtocol(SecurityProtocol.PLAINTEXT.id)
+          .setListener(plaintextListener.value)
+      ).asJava)
+
+
+    val broker3 = new UpdateMetadataBroker()
+      .setId(3)
+      .setRack("rack")
+      .setEndpoints(Seq(
+        new UpdateMetadataEndpoint()
+          .setHost("broker3")
+          .setPort(9093)
+          .setSecurityProtocol(SecurityProtocol.PLAINTEXT.id)
+          .setListener(plaintextListener.value)
+      ).asJava)
+
+
+
+
     // 2. Set up authorizer
     val authorizer: Authorizer = EasyMock.niceMock(classOf[Authorizer])
     val unauthorizedTopic = "unauthorized-topic"
@@ -2324,7 +2361,7 @@ class KafkaApisTest {
     val partitionStates = Seq(unauthorizedTopic, authorizedTopic).map(createDummyPartitionStates)
 
     val updateMetadataRequest = new UpdateMetadataRequest.Builder(ApiKeys.UPDATE_METADATA.latestVersion, 0,
-      0, 0, partitionStates.asJava, Seq(broker).asJava, topicIds).build()
+      0, 0, partitionStates.asJava, Seq(broker1,broker3,broker,broker2).asJava, topicIds).build()
     metadataCache.asInstanceOf[ZkMetadataCache].updateMetadata(correlationId = 0, updateMetadataRequest)
 
     // 4. Send TopicMetadataReq using topicId
