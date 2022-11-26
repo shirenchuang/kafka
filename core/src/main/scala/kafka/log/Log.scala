@@ -299,7 +299,7 @@ class Log(@volatile private var _dir: File,
 
     val nextOffset = loadSegments()
 
-    /* Calculate the offset of the next message */
+    /* Calculate the offset of the next message 主要用于计算消息偏移量 */
     nextOffsetMetadata = LogOffsetMetadata(nextOffset, activeSegment.baseOffset, activeSegment.size)
 
     leaderEpochCache.foreach(_.truncateFromEnd(nextOffsetMetadata.messageOffset))
@@ -1107,7 +1107,7 @@ class Log(@volatile private var _dir: File,
       // they are valid, insert them in the log
       lock synchronized {
         checkIfMemoryMappedBufferClosed()
-        if (assignOffsets) {
+        if (assignOffsets) {// Leader 执行的是这个
           // assign offsets to the message set
           val offset = new LongRef(nextOffsetMetadata.messageOffset)
           appendInfo.firstOffset = Some(offset.value)
@@ -1448,7 +1448,7 @@ class Log(@volatile private var _dir: File,
         sourceCodec = messageCodec
     }
 
-    // Apply broker-side compression if any
+    // broker端的压缩类型，如果config.compressionType=producer 则使用生产者的压缩类型sourceCodec；
     val targetCodec = BrokerCompressionCodec.getTargetCompressionCodec(config.compressionType, sourceCodec)
     LogAppendInfo(firstOffset, lastOffset, maxTimestamp, offsetOfMaxTimestamp, RecordBatch.NO_TIMESTAMP, logStartOffset,
       RecordConversionStats.EMPTY, sourceCodec, targetCodec, shallowMessageCount, validBytesCount, monotonic, lastOffsetOfFirstBatch)

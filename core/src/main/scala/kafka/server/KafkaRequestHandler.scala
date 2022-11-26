@@ -44,7 +44,7 @@ class KafkaRequestHandler(id: Int,
                           val requestChannel: RequestChannel,
                           apis: ApiRequestHandler,
                           time: Time) extends Runnable with Logging {
-  this.logIdent = "[Kafka Request Handler " + id + " on Broker " + brokerId + "], "
+  this.logIdent = "[Kafka Request Handler 请求处理器 " + id + " on Broker " + brokerId + "], "
   private val shutdownComplete = new CountDownLatch(1)
   @volatile private var stopped = false
 
@@ -55,7 +55,7 @@ class KafkaRequestHandler(id: Int,
       // time_window is independent of the number of threads, each recorded idle
       // time should be discounted by # threads.
       val startSelectTime = time.nanoseconds
-
+      //获取一个新的请求
       val req = requestChannel.receiveRequest(300)
       val endTime = time.nanoseconds
       val idleTime = endTime - startSelectTime

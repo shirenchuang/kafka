@@ -1227,7 +1227,7 @@ class KafkaController(val config: KafkaConfig,
   }
 
   private def checkAndTriggerAutoLeaderRebalance(): Unit = {
-    trace("Checking need to trigger auto leader balancing")
+    info("Checking need to trigger auto leader balancing")
     val preferredReplicasForTopicsByBrokers: Map[Int, Map[TopicPartition, Seq[Int]]] =
       controllerContext.allPartitions.filterNot {
         tp => topicDeletionManager.isTopicQueuedUpForDeletion(tp.topic)
@@ -1323,13 +1323,16 @@ class KafkaController(val config: KafkaConfig,
     controllerContext.shuttingDownBrokerIds.add(id)
     debug(s"All shutting down brokers: ${controllerContext.shuttingDownBrokerIds.mkString(",")}")
     debug(s"Live brokers: ${controllerContext.liveBrokerIds.mkString(",")}")
-
+    // 注意这里，如果该分区只有一个副本 那么是不会走  ControlledShutdownPartitionLeaderElectionStrategy leader选举的
     val partitionsToActOn = controllerContext.partitionsOnBroker(id).filter { partition =>
+     // System.out.println("我GIAO"+partition);
+      info(s"----partition:${partition}-szie=${controllerContext.partitionReplicaAssignment(partition).size }-defined:${controllerContext.partitionLeadershipInfo(partition).isDefined}--leader:${controllerContext.partitionLeadershipInfo(partition).get.leaderAndIsr}");
       controllerContext.partitionReplicaAssignment(partition).size > 1 &&
         controllerContext.partitionLeadershipInfo(partition).isDefined &&
         !topicDeletionManager.isTopicQueuedUpForDeletion(partition.topic)
     }
     val (partitionsLedByBroker, partitionsFollowedByBroker) = partitionsToActOn.partition { partition =>
+      info(s"-----${partition}-leader=${controllerContext.partitionLeadershipInfo(partition).get.leaderAndIsr.leader}--id=:${id}")
       controllerContext.partitionLeadershipInfo(partition).get.leaderAndIsr.leader == id
     }
     partitionStateMachine.handleStateChanges(partitionsLedByBroker.toSeq, OnlinePartition, Some(ControlledShutdownPartitionLeaderElectionStrategy))

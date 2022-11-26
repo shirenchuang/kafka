@@ -44,12 +44,21 @@ public class ErrorLoggingCallback implements Callback {
     }
 
     public void onCompletion(RecordMetadata metadata, Exception e) {
+
+        try {
+            Thread.sleep(3000);
+        } catch (InterruptedException interruptedException) {
+            interruptedException.printStackTrace();
+        }
+
+
+        System.out.println("用户回调ErrorLoggingCallback.....");
         if (e != null) {
             String keyString = (key == null) ? "null" :
                     logAsString ? new String(key, StandardCharsets.UTF_8) : key.length + " bytes";
             String valueString = (valueLength == -1) ? "null" :
                     logAsString ? new String(value, StandardCharsets.UTF_8) : valueLength + " bytes";
-            log.error("Error when sending message to topic {} with key: {}, value: {} with error:",
+            log.error("ErrorLoggingCallback:Error when sending message to topic {} with key: {}, value: {} with error:",
                     topic, keyString, valueString, e);
         }
     }

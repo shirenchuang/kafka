@@ -105,9 +105,11 @@ public class NetworkClient implements KafkaClient {
     private final String clientId;
 
     /* the current correlation id to use when sending requests to servers */
+    /* 向服务器发送请求时使用的当前关联 ID*/
     private int correlation;
 
     /* default timeout for individual requests to await acknowledgement from servers */
+    /* 单个请求等待服务器确认的默认超时*/
     private final int defaultRequestTimeoutMs;
 
     /* time in ms to wait before retrying to create connection to a server */
@@ -120,6 +122,7 @@ public class NetworkClient implements KafkaClient {
     /**
      * True if we should send an ApiVersionRequest when first connecting to a broker.
      */
+    /* 如果我们应该在第一次连接到代理时发送 ApiVersionRequest，则为真。 */
     private final boolean discoverBrokerVersions;
 
     private final ApiVersions apiVersions;

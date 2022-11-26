@@ -103,7 +103,7 @@ public enum CompressionType {
                 throw new KafkaException(e);
             }
         }
-
+        // 解压
         @Override
         public InputStream wrapForInput(ByteBuffer inputBuffer, byte messageVersion, BufferSupplier decompressionBufferSupplier) {
             try {

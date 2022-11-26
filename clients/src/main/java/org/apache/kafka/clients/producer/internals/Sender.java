@@ -358,7 +358,8 @@ public class Sender implements Runnable {
         Map<Integer, List<ProducerBatch>> batches = this.accumulator.drain(cluster, result.readyNodes, this.maxRequestSize, now);
         addToInflightBatches(batches);
         if (guaranteeMessageOrder) {
-            // Mute all the partitions drained
+            // 如果max.in.flight.requests.per.connection==1 要保持生产者的顺序性，则这个时候需要将待发送的Batchs们设置为静音状态,
+            //标记后,accumulator.drain 就会忽略这个TopicPartition的队列直到发送成功。
             for (List<ProducerBatch> batchList : batches.values()) {
                 for (ProducerBatch batch : batchList)
                     this.accumulator.mutePartition(batch.topicPartition);
@@ -601,6 +602,7 @@ public class Sender implements Runnable {
                 error);
             if (transactionManager != null)
                 transactionManager.removeInFlightBatch(batch);
+            // 当前的Batch太大了，那么按照Batch.size 尝试拆分一下重新放入累加器中
             this.accumulator.splitAndReenqueue(batch);
             maybeRemoveAndDeallocateBatch(batch);
             this.sensors.recordBatchSplit();

@@ -429,13 +429,17 @@ class ZkPartitionStateMachine(config: KafkaConfig,
       val partition = electionResult.topicPartition
       val failMsg = s"Failed to elect leader for partition $partition under strategy $partitionLeaderElectionStrategy"
       failedElections.put(partition, Left(new StateChangeFailedException(failMsg)))
+      System.out.println("---"+failMsg)
     }
     val recipientsPerPartition = partitionsWithLeaders.map(result => result.topicPartition -> result.liveReplicas).toMap
     val adjustedLeaderAndIsrs = partitionsWithLeaders.map(result => result.topicPartition -> result.leaderAndIsr.get).toMap
+    // 只有选出了leader 才能够更新
     val UpdateLeaderAndIsrResult(finishedUpdates, updatesToRetry) = zkClient.updateLeaderAndIsr(
       adjustedLeaderAndIsrs, controllerContext.epoch, controllerContext.epochZkVersion)
     finishedUpdates.forKeyValue { (partition, result) =>
+      System.out.println("6666666666==="+finishedUpdates.size)
       result.foreach { leaderAndIsr =>
+        System.out.println("leader更新成功 topic:"+partition.topic()+" partition:"+partition.partition()+"leaderAndIsr("+leaderAndIsr.leader+" | "+leaderAndIsr.isr)
         val replicaAssignment = controllerContext.partitionFullReplicaAssignment(partition)
         val leaderIsrAndControllerEpoch = LeaderIsrAndControllerEpoch(leaderAndIsr, controllerContext.epoch)
         controllerContext.putPartitionLeadershipInfo(partition, leaderIsrAndControllerEpoch)
@@ -471,6 +475,9 @@ class ZkPartitionStateMachine(config: KafkaConfig,
     leaderAndIsrs: Seq[(TopicPartition, LeaderAndIsr)],
     allowUnclean: Boolean
   ): Seq[(TopicPartition, Option[LeaderAndIsr], Boolean)] = {
+    // 组装对象,左边：该分区当前的ISR全都不在线了  右边是：该分区当前ISR至少有一个在线
+    // 其实意思就是 如果是左边的话 ，ISR就不用更新了,因为如果去更新,肯定就把ISR给全部删掉了,那就完犊子了
+    // 主要思想是当该分区已经处于不可用的状态时候 ISR不用变更。
     val (partitionsWithNoLiveInSyncReplicas, partitionsWithLiveInSyncReplicas) = leaderAndIsrs.partition {
       case (partition, leaderAndIsr) =>
         val liveInSyncReplicas = leaderAndIsr.isr.filter(controllerContext.isReplicaOnline(_, partition))

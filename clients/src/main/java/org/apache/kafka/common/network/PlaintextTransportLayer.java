@@ -37,6 +37,7 @@ public class PlaintextTransportLayer implements TransportLayer {
 
     public PlaintextTransportLayer(SelectionKey key) throws IOException {
         this.key = key;
+        //从SelectionKey 中获取channel
         this.socketChannel = (SocketChannel) key.channel();
     }
 

@@ -156,6 +156,7 @@ public class Selector implements Selectable, AutoCloseable {
             MemoryPool memoryPool,
             LogContext logContext) {
         try {
+            //创建一个Selector
             this.nioSelector = java.nio.channels.Selector.open();
         } catch (IOException e) {
             throw new KafkaException(e);
@@ -325,6 +326,7 @@ public class Selector implements Selectable, AutoCloseable {
     }
 
     protected SelectionKey registerChannel(String id, SocketChannel socketChannel, int interestedOps) throws IOException {
+        //向socketChannel注册 关注的事件
         SelectionKey key = socketChannel.register(nioSelector, interestedOps);
         KafkaChannel channel = buildAndAttachKafkaChannel(socketChannel, id, key);
         this.channels.put(id, channel);
@@ -337,6 +339,7 @@ public class Selector implements Selectable, AutoCloseable {
         try {
             KafkaChannel channel = channelBuilder.buildChannel(id, key, maxReceiveSize, memoryPool,
                 new SelectorChannelMetadataRegistry());
+            // 将KafkaChannel 这个对象附加到SelectionKey中。额外的信息
             key.attach(channel);
             return channel;
         } catch (Exception e) {
@@ -462,11 +465,13 @@ public class Selector implements Selectable, AutoCloseable {
 
         /* check ready keys */
         long startSelect = time.nanoseconds();
+        //阻塞到至少有一个通道在你注册的事件上就绪了
         int numReadyKeys = select(timeout);
         long endSelect = time.nanoseconds();
         this.sensors.selectTime.record(endSelect - startSelect, time.milliseconds());
 
         if (numReadyKeys > 0 || !immediatelyConnectedKeys.isEmpty() || dataInBuffers) {
+            //获取所有已经就绪的通道集合
             Set<SelectionKey> readyKeys = this.nioSelector.selectedKeys();
 
             // Poll from channels that have buffered data (but nothing more from the underlying socket)
@@ -1029,6 +1034,7 @@ public class Selector implements Selectable, AutoCloseable {
      * Get the channel associated with selectionKey
      */
     private KafkaChannel channel(SelectionKey key) {
+        //获取key里面的附件信息，注册的时候有放KafkaChannel进去
         return (KafkaChannel) key.attachment();
     }
 

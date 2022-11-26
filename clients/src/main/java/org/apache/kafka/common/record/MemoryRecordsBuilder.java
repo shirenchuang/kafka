@@ -131,6 +131,7 @@ public class MemoryRecordsBuilder implements AutoCloseable {
 
         bufferStream.position(initialPosition + batchHeaderSizeInBytes);
         this.bufferStream = bufferStream;
+        //具体压缩的地方。
         this.appendStream = new DataOutputStream(compressionType.wrapForOutput(this.bufferStream, magic));
     }
 
@@ -279,7 +280,9 @@ public class MemoryRecordsBuilder implements AutoCloseable {
     public void closeForRecordAppends() {
         if (appendStream != CLOSED_STREAM) {
             try {
+                System.out.println("压缩之前的大小为："+appendStream.size());
                 appendStream.close();
+                System.out.println("压缩之后的大小为："+appendStream.size());
             } catch (IOException e) {
                 throw new KafkaException(e);
             } finally {
@@ -366,7 +369,7 @@ public class MemoryRecordsBuilder implements AutoCloseable {
             maxTimestamp = logAppendTime;
         else
             maxTimestamp = this.maxTimestamp;
-
+        //RecordBatch 消息头
         DefaultRecordBatch.writeHeader(buffer, baseOffset, offsetDelta, size, magic, compressionType, timestampType,
                 firstTimestamp, maxTimestamp, producerId, producerEpoch, baseSequence, isTransactional, isControlBatch,
                 partitionLeaderEpoch, numRecords);
@@ -696,7 +699,9 @@ public class MemoryRecordsBuilder implements AutoCloseable {
         ensureOpenForRecordAppend();
         int offsetDelta = (int) (offset - baseOffset);
         long timestampDelta = timestamp - firstTimestamp;
+        //将数据 写到appendStream中。
         int sizeInBytes = DefaultRecord.writeTo(appendStream, offsetDelta, timestampDelta, key, value, headers);
+        // 记录一下 写入了多少数据
         recordWritten(offset, timestamp, sizeInBytes);
     }
 

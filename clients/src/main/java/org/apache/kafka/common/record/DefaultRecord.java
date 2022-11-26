@@ -183,6 +183,7 @@ public class DefaultRecord implements Record {
                               ByteBuffer value,
                               Header[] headers) throws IOException {
         int sizeInBytes = sizeOfBodyInBytes(offsetDelta, timestampDelta, key, value, headers);
+        System.out.println("该条写入消息的长度length大小为：" + sizeInBytes);
         ByteUtils.writeVarint(sizeInBytes, out);
 
         byte attributes = 0; // there are no used record attributes at the moment

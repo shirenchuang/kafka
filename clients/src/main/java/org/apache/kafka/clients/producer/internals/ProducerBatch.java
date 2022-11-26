@@ -117,6 +117,8 @@ public final class ProducerBatch {
             // split to several new batches and resent.
             thunks.add(new Thunk(callback, future));
             this.recordCount++;
+
+            System.out.println("在ProducerBatch："+topicPartition.topic()+"-"+topicPartition.partition()+" 中追加消息,recordCount="+recordCount+" 当前Batch预估大小:"+recordsBuilder.estimatedSizeInBytes());
             return future;
         }
     }

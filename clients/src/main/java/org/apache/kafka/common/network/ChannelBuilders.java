@@ -148,6 +148,7 @@ public class ChannelBuilders {
                         logContext);
                 break;
             case PLAINTEXT:
+                // isInterBrokerListener 在plaintext情况下 无左右, 只是使用了listenerName
                 channelBuilder = new PlaintextChannelBuilder(listenerName);
                 break;
             default:

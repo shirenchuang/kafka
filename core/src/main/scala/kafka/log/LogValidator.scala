@@ -276,7 +276,7 @@ private[log] object LogValidator extends Logging {
     var maxTimestamp = RecordBatch.NO_TIMESTAMP
     var offsetOfMaxTimestamp = -1L
     val initialOffset = offsetCounter.value
-
+    // 如果格式>=V2  或者压缩过 则只检查第一个batch
     val firstBatch = getFirstBatchAndMaybeValidateNoMoreBatches(records, NoCompressionCodec)
 
     records.batches.forEach { batch =>

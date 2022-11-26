@@ -128,12 +128,12 @@ public final class Cluster {
             if (p.leader() == null || p.leader().isEmpty())
                 continue;
 
-            // If it is known, its node information should be available
+            // 把分区按照Leader所在的Broker 划分
             List<PartitionInfo> partitionsForNode = Objects.requireNonNull(tmpPartitionsByNode.get(p.leader().id()));
             partitionsForNode.add(p);
         }
 
-        // Update the values of `tmpPartitionsByNode` to contain unmodifiable lists
+        // 将分区列表使用 不可修改列表来包装
         for (Map.Entry<Integer, List<PartitionInfo>> entry : tmpPartitionsByNode.entrySet()) {
             tmpPartitionsByNode.put(entry.getKey(), Collections.unmodifiableList(entry.getValue()));
         }

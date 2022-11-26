@@ -930,6 +930,8 @@ public class KafkaProducer<K, V> implements Producer<K, V> {
                         " specified in value.serializer", cce);
             }
             int partition = partition(record, serializedKey, serializedValue, cluster);
+            log.info("分区号：{}",partition);
+
             tp = new TopicPartition(record.topic(), partition);
 
             setReadOnly(record.headers());
@@ -950,7 +952,7 @@ public class KafkaProducer<K, V> implements Producer<K, V> {
             }
             RecordAccumulator.RecordAppendResult result = accumulator.append(tp, timestamp, serializedKey,
                     serializedValue, headers, interceptCallback, remainingWaitMs, true, nowMs);
-
+            // 判断这次不能用当前的Batch了,所以需要创建新的Batch, 那么分区也需要重新计算。
             if (result.abortForNewBatch) {
                 int prevPartition = partition;
                 partitioner.onNewBatch(record.topic(), cluster, prevPartition);
@@ -962,6 +964,7 @@ public class KafkaProducer<K, V> implements Producer<K, V> {
                 // producer callback will make sure to call both 'callback' and interceptor callback
                 interceptCallback = new InterceptorCallback<>(callback, this.interceptors, tp);
 
+                log.info("abortForNewBatch分区号：{}",partition);
                 result = accumulator.append(tp, timestamp, serializedKey,
                     serializedValue, headers, interceptCallback, remainingWaitMs, false, nowMs);
             }
@@ -1021,7 +1024,7 @@ public class KafkaProducer<K, V> implements Producer<K, V> {
 
         if (cluster.invalidTopics().contains(topic))
             throw new InvalidTopicException(topic);
-
+        // 添加Topic，如果发现Topic不存在当然的缓存中。则修改上一次的更新时间，让其立刻触发一次元信息更新
         metadata.add(topic, nowMs);
 
         Integer partitionsCount = cluster.partitionCountForTopic(topic);
@@ -1362,8 +1365,9 @@ public class KafkaProducer<K, V> implements Producer<K, V> {
         public void onCompletion(RecordMetadata metadata, Exception exception) {
             metadata = metadata != null ? metadata : new RecordMetadata(tp, -1, -1, RecordBatch.NO_TIMESTAMP, -1L, -1, -1);
             this.interceptors.onAcknowledgement(metadata, exception);
-            if (this.userCallback != null)
+            if (this.userCallback != null){
                 this.userCallback.onCompletion(metadata, exception);
+            }
         }
     }
 }

@@ -193,6 +193,7 @@ public final class KafkaLZ4BlockOutputStream extends OutputStream {
             ByteUtils.writeUnsignedIntLE(out, hash);
         }
         bufferOffset = 0;
+        System.out.println("压缩长度："+compressedLength);
     }
 
     /**

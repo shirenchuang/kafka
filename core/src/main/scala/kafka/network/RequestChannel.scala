@@ -329,6 +329,7 @@ class RequestChannel(val queueSize: Int,
   })
 
   def addProcessor(processor: Processor): Unit = {
+    info(s"dataPlaneRequestChannel.processors 添加Processor，processorId:${processor.id}")
     if (processors.putIfAbsent(processor.id, processor) != null)
       warn(s"Unexpected processor with processorId ${processor.id}")
 
